@@ -1,0 +1,20 @@
+{
+  "name": "sr-shelter-sync",
+  "version": "0.0.1",
+  "description": "CLI interface to sync google sheet of offered accommodations to socrata",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "srsync": "./index.js"
+  },
+  "author": "Jason Lally",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^2.11.0",
+    "google-auth-library": "^0.11.0",
+    "googleapis": "^22.2.0",
+    "soda-js": "^0.2.3"
+  }
+}
