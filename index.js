@@ -110,12 +110,14 @@ function syncSheets (auth) {
   var sheets = [{ 
       spreadsheetId: '1fOLC3oZBekNU4W0a1H4KB-EyCdxy-oBtIxC2sekeZVE',
       range: 'Form Responses!A1:U'
-    }, {
-      spreadsheetId: '1acM40tNCbPYQa2rcOPCpbbTM_E-4rbDsQZuVbssTWcU',
-      range: 'Available Homes!A1:M'
     }];
+    // }, {
+    //   spreadsheetId: '1acM40tNCbPYQa2rcOPCpbbTM_E-4rbDsQZuVbssTWcU',
+    //   range: 'Available Homes!A1:M'
+    // }];
 
-  var destinations = ['swcq-c9ux', 'x5wj-re9i'];
+  // var destinations = ['swcq-c9ux', 'x5wj-re9i'];
+  var destinations = ['swcq-c9ux'];
   var sodaOptions = {
     username: program.username,
     password: program.password,
@@ -163,6 +165,8 @@ function syncSheets (auth) {
           data.push(json);
         }
       }
+      // console.log('data');
+      // console.log(data);
       syncToSocrata(data, sodaOptions)
     }
   });
@@ -212,6 +216,7 @@ function syncSheets (auth) {
   */
 
  function syncToSocrata (json, sodaOptions) {
+  console.log(json);
    var producer = new soda.Producer('srrt.demo.socrata.com', sodaOptions);
 
    producer.operation()
