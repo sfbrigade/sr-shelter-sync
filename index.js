@@ -227,3 +227,4 @@ function syncSheets (auth) {
     .withDataset(sodaOptions.destinationId)
     .upsert(json)
  }
+ 
