@@ -216,7 +216,6 @@ function syncSheets (auth) {
   */
 
  function syncToSocrata (json, sodaOptions) {
-  console.log(json);
    var producer = new soda.Producer('srrt.demo.socrata.com', sodaOptions);
 
    producer.operation()
@@ -227,4 +226,3 @@ function syncSheets (auth) {
     .withDataset(sodaOptions.destinationId)
     .upsert(json)
  }
- 
