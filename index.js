@@ -29,7 +29,7 @@ fs.readFile('client_secret.json', function processClientSecrets(err, content) {
   }
   // Authorize a client with the loaded credentials, then call the
   // Google Sheets API.
-  authorize(JSON.parse(content), syncData);
+  authorize(JSON.parse(content), syncSheets);
 });
 
 /**
@@ -106,21 +106,39 @@ function storeToken (token) {
   console.log('Token stored to ' + TOKEN_PATH);
 }
 
+function syncSheets (auth) {
+  var sheets = [{ 
+      spreadsheetId: '1fOLC3oZBekNU4W0a1H4KB-EyCdxy-oBtIxC2sekeZVE',
+      range: 'Form Responses!A1:U'
+    }, {
+      spreadsheetId: '1acM40tNCbPYQa2rcOPCpbbTM_E-4rbDsQZuVbssTWcU',
+      range: 'Available Homes!A1:M'
+    }];
+
+  var destinations = ['swcq-c9ux', 'x5wj-re9i'];
+  var sodaOptions = {
+    username: program.username,
+    password: program.password,
+    token: program.token
+  }
+  for (var i=0; i < sheets.length; i++) {
+    var sheetOptions = sheets[i];
+    sheetOptions['auth'] = auth;
+    sodaOptions['destinationId'] = destinations[i];
+    syncData(auth, sheetOptions, sodaOptions);
+  }
+}
+
 /**
  * 
  * @param {String} auth 
- * @param {String} username 
- * @param {String} password 
- * @param {String} token 
+ * @param {Object} sheetOptions
+ * @param {Object} sodaOptions
  */
 
- function syncData (auth, username, password, token) {
+ function syncData (auth, sheetOptions, sodaOptions) {
   var sheets = google.sheets('v4');
-  sheets.spreadsheets.values.get({
-    auth: auth,
-    spreadsheetId: '1fOLC3oZBekNU4W0a1H4KB-EyCdxy-oBtIxC2sekeZVE',
-    range: 'Form Responses!A1:U',
-  }, function(err, response) {
+  sheets.spreadsheets.values.get(sheetOptions, function(err, response) {
     if (err) {
       console.log('The API returned an error: ' + err);
       return;
@@ -138,10 +156,14 @@ function storeToken (token) {
           var value = row[j]
           json[keys[j]] = value
         }
-        // only include approved rows
-        if(json['status'] === 'Approved') { data.push(json); }
+        // if no status field, push data, if status field, only push if approved
+        if(typeof json['status'] === 'undefined') { 
+          data.push(json); 
+        } else if(json['status'] === 'Approved') {
+          data.push(json);
+        }
       }
-      syncToSocrata(data)
+      syncToSocrata(data, sodaOptions)
     }
   });
  }
@@ -171,13 +193,13 @@ function storeToken (token) {
   str = str.toLowerCase();
 
   // remove accents, swap ñ for n, etc
-  var from = "àáäâèéëêìíïîòóöôùúüûñç·/_,:;";
-  var to   = "aaaaeeeeiiiioooouuuunc------";
+  var from = "àáäâèéëêìíïîòóöôùúüûñç·/-,:;";
+  var to   = "aaaaeeeeiiiioooouuuunc_______";
   for (var i=0, l=from.length ; i<l ; i++) {
       str = str.replace(new RegExp(from.charAt(i), 'g'), to.charAt(i));
   }
 
-  str = str.replace(/[^a-z0-9 _]/g, '') // remove invalid chars
+  str = str.replace(/[^a-z0-9 _\/]/g, '') // remove invalid chars
       .replace(/\s+/g, '_') // collapse whitespace and replace by _
       .replace(/_+/g, '_'); // collapse underscores
 
@@ -189,20 +211,14 @@ function storeToken (token) {
   * @param {Array} json Array of json objects to send to socrata
   */
 
- function syncToSocrata (json) {
-    var sodaConnectionOptions = {
-      apiToken: program.token,
-      username: program.username,
-      password: program.password
-    } 
-
-   var producer = new soda.Producer('srrt.demo.socrata.com', sodaConnectionOptions);
+ function syncToSocrata (json, sodaOptions) {
+   var producer = new soda.Producer('srrt.demo.socrata.com', sodaOptions);
 
    producer.operation()
-    .withDataset('swcq-c9ux')
+    .withDataset(sodaOptions['destinationId'])
     .truncate()
-    
+
   producer.operation()
-    .withDataset('swcq-c9ux')
+    .withDataset(sodaOptions.destinationId)
     .upsert(json)
  }
