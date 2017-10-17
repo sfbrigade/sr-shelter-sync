@@ -10,7 +10,9 @@ var program = require('commander');
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/sheets.googleapis.com-nodejs-quickstart.json
 var SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
-var TOKEN_PATH = 'sheets.googleapis.com-santa-rosa-map.json';
+var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
+    process.env.USERPROFILE) + '/.credentials/';
+var TOKEN_PATH = TOKEN_DIR + 'sheets.googleapis.com-santa-rosa-map.json';
 
 program
   .version('0.0.1')
@@ -108,12 +110,14 @@ function syncSheets (auth) {
   var sheets = [{ 
       spreadsheetId: '1fOLC3oZBekNU4W0a1H4KB-EyCdxy-oBtIxC2sekeZVE',
       range: 'Form Responses!A1:U'
-    }, {
-      spreadsheetId: '1acM40tNCbPYQa2rcOPCpbbTM_E-4rbDsQZuVbssTWcU',
-      range: 'Available Homes!A1:M'
     }];
+    // }, {
+    //   spreadsheetId: '1acM40tNCbPYQa2rcOPCpbbTM_E-4rbDsQZuVbssTWcU',
+    //   range: 'Available Homes!A1:M'
+    // }];
 
-  var destinations = ['swcq-c9ux', 'x5wj-re9i'];
+  // var destinations = ['swcq-c9ux', 'x5wj-re9i'];
+  var destinations = ['swcq-c9ux'];
   var sodaOptions = {
     username: program.username,
     password: program.password,
@@ -161,6 +165,8 @@ function syncSheets (auth) {
           data.push(json);
         }
       }
+      // console.log('data');
+      // console.log(data);
       syncToSocrata(data, sodaOptions)
     }
   });
